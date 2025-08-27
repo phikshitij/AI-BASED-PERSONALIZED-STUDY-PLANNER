@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Planner - Onboarding</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://ai-public.creatie.ai/gen_page/tailwind-custom.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 font-[Inter] min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full mx-auto p-6">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-white mb-2">Welcome to Study Planner</h1>
+            <p class="text-gray-400">Let's set up your academic profile</p>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+            <form id="onboardingForm" class="space-y-6">
+                <!-- Academic Level -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1" for="academicLevel">Academic Level</label>
+                    <select id="academicLevel" class="w-full bg-gray-700 border-gray-600 text-white rounded-md p-2" required>
+                        <option value="">Select Level</option>
+                        <option value="bachelor">Bachelor's</option>
+                        <option value="master">Master's</option>
+                        <option value="phd">PhD</option>
+                    </select>
+                </div>
+
+                <!-- Domain -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1" for="domain">Domain</label>
+                    <select id="domain" class="w-full bg-gray-700 border-gray-600 text-white rounded-md p-2" required>
+                        <option value="">Select Domain</option>
+                        <option value="engineering">Engineering</option>
+                        <option value="science">Science</option>
+                        <option value="arts">Arts</option>
+                        <option value="commerce">Commerce</option>
+                    </select>
+                </div>
+
+                <!-- Branch (if Engineering) -->
+                <div id="branchContainer" class="hidden">
+                    <label class="block text-sm font-medium text-gray-300 mb-1" for="branch">Branch</label>
+                    <select id="branch" class="w-full bg-gray-700 border-gray-600 text-white rounded-md p-2">
+                        <option value="">Select Branch</option>
+                        <option value="computer">Computer Engineering</option>
+                        <option value="mechanical">Mechanical Engineering</option>
+                        <option value="electrical">Electrical Engineering</option>
+                        <option value="civil">Civil Engineering</option>
+                        <option value="electronics">Electronics Engineering</option>
+                    </select>
+                </div>
+
+                <!-- Year -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1" for="year">Current Year</label>
+                    <select id="year" class="w-full bg-gray-700 border-gray-600 text-white rounded-md p-2" required>
+                        <option value="">Select Year</option>
+                        <option value="1">1st Year</option>
+                        <option value="2">2nd Year</option>
+                        <option value="3">3rd Year</option>
+                        <option value="4">4th Year</option>
+                    </select>
+                </div>
+
+                <!-- University -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-1" for="university">University</label>
+                    <select id="university" class="w-full bg-gray-700 border-gray-600 text-white rounded-md p-2" required>
+                        <option value="">Select University</option>
+                        <option value="mumbai">Mumbai University (MU)</option>
+                        <option value="delhi">Savitribai Phule Pune University (SPPU)</option>
+                    </select>
+                </div>
+
+                <!-- Get Started Button -->
+                <button type="submit" class="w-full bg-purple-600 text-white py-2 rounded-lg text-lg font-medium hover:bg-purple-700 transition-all">
+                    Get Started!
+                </button>
+            </form>
+        </div>
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('onboardingForm');
+        const domainSelect = document.getElementById('domain');
+        const branchContainer = document.getElementById('branchContainer');
+        const branchSelect = document.getElementById('branch');
+        const academicLevelSelect = document.getElementById('academicLevel');
+        const yearSelect = document.getElementById('year');
+
+        // Show/hide branch selection based on domain
+        domainSelect.addEventListener('change', function () {
+            if (this.value === 'engineering') {
+                branchContainer.classList.remove('hidden');
+                branchSelect.required = true;
+            } else {
+                branchContainer.classList.add('hidden');
+                branchSelect.required = false;
+            }
+        });
+
+        // Adjust year dropdown based on academic level
+        academicLevelSelect.addEventListener('change', function () {
+            yearSelect.innerHTML = ''; // Clear existing options
+
+            let yearOptions;
+            if (this.value === 'bachelor') {
+                yearOptions = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+            } else if (this.value === 'master' || this.value === 'phd') {
+                yearOptions = ['1st Year', '2nd Year'];
+            } else {
+                yearOptions = ['Select Year'];
+            }
+
+            yearOptions.forEach((year, index) => {
+                let option = document.createElement('option');
+                option.value = index + 1;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            });
+        });
+
+        // Handle form submission
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Collect form data
+            const formData = {
+                user_id: "01",
+                academicLevel: academicLevelSelect.value,
+                domain: domainSelect.value,
+                branch: domainSelect.value === 'engineering' ? branchSelect.value : null,
+                year: yearSelect.value,
+                university: document.getElementById('university').value
+            };
+
+            try {
+                // Send data to backend API
+                const response = await fetch('http://localhost:8082/api/onboarding/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Save to localStorage as backup
+                    localStorage.setItem('user_profile', JSON.stringify(formData));
+                    
+                    // Show success message
+                    alert("Profile saved successfully!");
+                    
+                    // Redirect to study plan page
+                    window.location.href = 'progressTracking.html';
+                } else {
+                    throw new Error(result.message || "Failed to save profile");
+                }
+            } catch (error) {
+                console.error("Error saving profile:", error);
+                alert("Error saving profile: " + error.message);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Planner</title>
+    <link rel="stylesheet" href="display2.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    
+    <style>
+        .calendar-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #4285F4;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #2A2A3C;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            position: relative;
+        }
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-size: 16px;
+        }
+        .modal-btn:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        #modalSubject {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background: #3b3b4f;
+            color: white;
+            border: 1px solid #4a4a5f;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav>
+            <ul>
+                <li><a href="studyPlan.html">Home</a></li>
+                <li><a href="podsAndQuizzes.html">Learning Pods & Quizzes</a></li>
+                <li><a href="todayschedule.html">Today's Schedule</a></li>
+                <li><a href="ChatBot.html">ChatBot</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1>📚 Smart Study Planner</h1>
+
+        <div class="input-section">
+            <label for="subjectName">Enter Subject Name:</label>
+            <input type="text" id="subjectName" placeholder="E.g. Math, Physics">
+            <button onclick="fetchStudyPlan()">Get Study Plan</button>
+        </div>
+
+        <div id="study-plan" class="study-plan-container"></div>
+        <div id="schedule" class="content-box"></div>
+    </div>
+
+    <div class="calendar-btn" id="calendarBtn">
+        <i class="fas fa-calendar-plus"></i>
+    </div>
+    
+    <div id="calendarModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 style="color: white; margin-bottom: 15px;">Add to Google Calendar</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">Sync your study plan with Google Calendar to get reminders and manage your schedule better.</p>
+            <div>
+                <label for="modalSubject" style="color: white;">Select Subject:</label>
+                <select id="modalSubject">
+                    <option value="">Select a subject</option>
+                </select>
+            </div>
+            <button id="addToCalendarBtn" class="modal-btn">
+                Add to Google Calendar
+            </button>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>2025 Smart Study Planner | Designed for Productivity</p>
+    </footer>
+
+    <script src="display1.js"></script>
+    <script>
+        const calendarBtn = document.getElementById('calendarBtn');
+        const calendarModal = document.getElementById('calendarModal');
+        const closeBtn = document.querySelector('.close');
+        const addToCalendarBtn = document.getElementById('addToCalendarBtn');
+        const modalSubject = document.getElementById('modalSubject');
+        
+        const userId = "01";
+        
+        calendarBtn.onclick = function() {
+            fetchSubjects();
+            calendarModal.style.display = "block";
+        }
+        
+        closeBtn.onclick = function() {
+            calendarModal.style.display = "none";
+        }
+        
+        window.onclick = function(event) {
+            if (event.target == calendarModal) {
+                calendarModal.style.display = "none";
+            }
+        }
+        
+        function fetchSubjects() {
+            addToCalendarBtn.disabled = true;
+            modalSubject.innerHTML = '<option value="">Loading subjects...</option>';
+
+            fetch(`http://localhost:8082/api/studyplan/study-plans?userId=${userId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to fetch subjects');
+                    return response.json();
+                })
+                .then(data => {
+                    modalSubject.innerHTML = '<option value="">Select a subject</option>';
+                    data.forEach(plan => {
+                        if (plan.subject) {
+                            const option = document.createElement('option');
+                            option.value = plan.subject;
+                            option.textContent = plan.subject;
+                            modalSubject.appendChild(option);
+                        }
+                    });
+                    addToCalendarBtn.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error fetching subjects:', error);
+                    modalSubject.innerHTML = '<option value="">Error loading subjects</option>';
+                    addToCalendarBtn.disabled = true;
+                });
+        }
+        
+        addToCalendarBtn.onclick = function() {
+            const subject = modalSubject.value;
+            
+            if (!subject) {
+                alert('Please select a subject');
+                return;
+            }
+
+            addToCalendarBtn.disabled = true;
+            addToCalendarBtn.textContent = 'Adding to Calendar...';
+
+            fetch('http://localhost:8082/api/calendar/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: userId,
+                    subject: subject
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    if (data.redirectUrl) {
+                        if (confirm('Google Calendar authorization required. Would you like to proceed?')) {
+                            window.location.href = data.redirectUrl;
+                        }
+                    } else {
+                        throw new Error(data.error);
+                    }
+                } else {
+                    alert('Successfully added to Google Calendar!');
+                    calendarModal.style.display = "none";
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to add to calendar: ' + error.message);
+            })
+            .finally(() => {
+                addToCalendarBtn.disabled = false;
+                addToCalendarBtn.textContent = 'Add to Google Calendar';
+            });
+        }
+
+        function getTopicSpecificResource(title, type) {
+            // Comprehensive resource mapping for Automata Theory topics
+            const resourceMap = {
+                'introduction to automata': {
+                    video: 'https://www.youtube.com/watch?v=58N2N7zJGrQ',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/automata_theory_introduction.htm',
+                    article: 'https://www.geeksforgeeks.org/introduction-of-finite-automata/'
+                },
+                'formal language': {
+                    video: 'https://www.youtube.com/watch?v=HfwGjrAPrO8',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/automata_theory_languages.htm',
+                    article: 'https://www.geeksforgeeks.org/introduction-of-formal-languages/'
+                },
+                'regular expression': {
+                    video: 'https://www.youtube.com/watch?v=9PLnN3k9Iqs',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/regular_expressions.htm',
+                    article: 'https://www.geeksforgeeks.org/regular-expressions-regular-grammar-and-regular-languages/'
+                },
+                'finite automata': {
+                    video: 'https://www.youtube.com/watch?v=Qa6csfkK7_I',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/finite_automata.htm',
+                    article: 'https://www.geeksforgeeks.org/introduction-of-finite-automata/'
+                },
+                'dfa': {
+                    video: 'https://www.youtube.com/watch?v=40i4PKpM0cI',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/deterministic_finite_automaton.htm',
+                    article: 'https://www.geeksforgeeks.org/deterministic-finite-automata-acceptance-of-strings/'
+                },
+                'nfa': {
+                    video: 'https://www.youtube.com/watch?v=eqCkkC9A0Q4',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/non_deterministic_finite_automaton.htm',
+                    article: 'https://www.geeksforgeeks.org/nondeterministic-finite-automata-nfa/'
+                },
+                'pushdown automata': {
+                    video: 'https://www.youtube.com/watch?v=FPxYePJXD6E',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/pushdown_automata.htm',
+                    article: 'https://www.geeksforgeeks.org/pushdown-automata-introduction/'
+                },
+                'turing machine': {
+                    video: 'https://www.youtube.com/watch?v=dNRDvLACg5Q',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/turing_machine_introduction.htm',
+                    article: 'https://www.geeksforgeeks.org/turing-machine-introduction/'
+                },
+                'context free grammar': {
+                    video: 'https://www.youtube.com/watch?v=h4s5M-eZGyY',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/context_free_grammar.htm',
+                    article: 'https://www.geeksforgeeks.org/context-free-grammar-introduction/'
+                }
+            };
+
+            // Find the most specific matching topic
+            let bestMatch = null;
+            let maxMatchLength = 0;
+            const titleLower = title.toLowerCase();
+
+            for (const [topic, links] of Object.entries(resourceMap)) {
+                if (titleLower.includes(topic) && topic.length > maxMatchLength) {
+                    bestMatch = links;
+                    maxMatchLength = topic.length;
+                }
+            }
+
+            if (bestMatch) {
+                return bestMatch[type];
+            }
+
+            // Default resources based on type if no specific match is found
+            const defaultResources = {
+                video: 'https://www.youtube.com/watch?v=58N2N7zJGrQ',
+                pdf: 'https://www.tutorialspoint.com/automata_theory/automata_theory_introduction.htm',
+                article: 'https://www.geeksforgeeks.org/introduction-of-finite-automata/'
+            };
+
+            return defaultResources[type];
+        }
+
+        function processResources(content) {
+            if (!content) return '';
+
+            const resourceRegex = /-\s*(PDF|VIDEO|ARTICLE):\s*([^(]+)\s*\(([^)]+)\)/gi;
+            const resources = [];
+            let match;
+
+            while ((match = resourceRegex.exec(content)) !== null) {
+                const type = match[1].toLowerCase();
+                const title = match[2].trim();
+                const link = getTopicSpecificResource(title, type);
+
+                resources.push({
+                    type: type,
+                    title: title,
+                    link: link
+                });
+            }
+
+            return `
+                <div class="resources">
+                    <h4 class="text-xl text-white font-semibold mb-4">📚 Recommended Resources:</h4>
+                    ${resources.map(resource => `
+                        <div class="resource-item ${resource.type}-type mb-4">
+                            <a href="${resource.link}" 
+                               class="resource-link"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               onclick="return validateResourceLink(event, '${resource.link}', '${resource.title}')">
+                                <div class="flex items-center gap-3 p-4 bg-gray-700 rounded-lg hover:bg-gray-600 transition-all">
+                                    <span class="text-2xl">
+                                        ${resource.type === 'video' ? '🎥' : resource.type === 'pdf' ? '📄' : '📑'}
+                                    </span>
+                                    <div>
+                                        <p class="text-white font-semibold">${resource.title}</p>
+                                        <span class="text-blue-400 text-sm">Open ${resource.type.toUpperCase()}</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function validateResourceLink(event, link, title) {
+            // Validate domains to ensure they're related to computer science/automata theory
+            const validDomains = [
+                'tutorialspoint.com/automata_theory',
+                'geeksforgeeks.org',
+                'youtube.com',
+                'nptel.ac.in',
+                'mit.edu'
+            ];
+
+            const isValid = validDomains.some(domain => link.includes(domain));
+            
+            if (!isValid) {
+                event.preventDefault();
+                alert('Warning: This resource might not be related to Automata Theory. Please try another resource.');
+                return false;
+            }
+
+            // Log for debugging
+            console.log(`Opening resource: ${title} - ${link}`);
+            return true;
+        }
+    </script>
+</body>
+</html>

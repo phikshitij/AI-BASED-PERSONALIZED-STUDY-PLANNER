@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Generate Learning Pod</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    <link href="https://ai-public.creatie.ai/gen_page/tailwind-custom.css" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com/3.4.5?plugins=forms@0.5.7,typography@0.5.13,aspect-ratio@0.4.2,container-queries@0.1.1"></script>
+    <script src="https://ai-public.creatie.ai/gen_page/tailwind-config.min.js" data-color="#000000" data-border-radius="small"></script>
+</head>
+<body class="bg-gray-900 min-h-screen flex flex-col">
+    <nav class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <img class="h-8 w-auto" src="https://ai-public.creatie.ai/gen_page/logo_placeholder.png" alt="Logo"/>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <a href="studyPlan.html" class="rounded-full bg-gray-700 text-white px-4 py-2 text-sm font-medium mr-3">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </a>
+                    <a href="display.html" class="rounded-full bg-gray-700 text-white px-4 py-2 text-sm font-medium mr-3">
+                        <i class="fas fa-list mr-2"></i>Schedules
+                    </a>
+                    <a href="todayschedule.html" class="rounded-full bg-custom text-white px-4 py-2 text-sm font-medium mr-3">
+                        <i class="fas fa-calendar-alt mr-2"></i>Today's Schedule
+                    </a>
+                    <a href="ChatBot.html" class="rounded-full bg-gray-700 text-white px-4 py-2 text-sm font-medium">
+                        <i class="fas fa-robot mr-2"></i>ChatBot
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="flex-grow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold text-white mb-4">
+                    Personalized Micro-Learning Experience
+                </h1>
+                <p class="text-xl text-gray-400">
+                    Create engaging learning pods tailored to your needs
+                </p>
+            </div>
+            <div class="bg-gray-800 rounded-lg shadow-lg p-8 max-w-3xl mx-auto">
+                <div class="flex items-center justify-center mb-8">
+                    <img src="images/undraw_creative-flow_t3kz.svg" alt="Robot Teacher" class="w-64 h-48 object-contain drop-shadow-xl rounded-xl border-4 border-blue-700 bg-gray-900"/>
+                </div>
+                <h2 class="text-2xl font-semibold text-center text-gray-100 mb-8">
+                    Do you want to generate micro-learning pod and give quizzes?
+                </h2>
+                <div class="space-y-6">
+                    <div class="relative">
+                        <label for="subject" class="block text-sm font-medium text-gray-300 mb-2">Select Your Subject</label>
+                        <div class="relative">
+                            <input type="text" id="subject" class="block w-full pl-4 pr-10 py-3 bg-gray-700 border border-gray-600 rounded-md text-gray-100 placeholder-gray-400 focus:ring-custom focus:border-custom" placeholder="Mathematics, Science, History..." onchange="localStorage.setItem('selectedSubject', this.value)"/>
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-400 mt-2">
+                        <i class="fas fa-info-circle mr-1"></i>Note: Entered subject should be present in generated schedule otherwise first generate the schedule.
+                    </div>
+                    <button id="generateLearningPodBtn" class="rounded-full w-full bg-blue-600 text-white py-4 text-lg font-semibold flex items-center justify-center gap-2 shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition">
+                        <i class="fas fa-magic"></i>
+                        Generate Learning Pod
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="bg-gray-900 border-t border-gray-700">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-gray-400 text-sm">
+                2024 Learning Pod Generator. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+<script>
+    // Add event listener to the Generate Learning Pod button
+    const generateBtn = document.getElementById('generateLearningPodBtn');
+    let isGenerating = false;
+    generateBtn.addEventListener('click', async () => {
+        if (isGenerating) return; // Prevent duplicate requests
+        // Get the subject from the input field
+        const subject = document.getElementById('subject').value;
+        if (!subject) {
+            alert('Please enter a subject!');
+            return;
+        }
+        const userId = localStorage.getItem('userId') || sessionStorage.getItem('userId') || '';
+        if (!userId) {
+            alert('User ID not found. Please log in again.');
+            return;
+        }
+        localStorage.setItem('selectedSubject', subject);
+        const requestData = { subject, userId };
+        // Disable button and show loading
+        isGenerating = true;
+        generateBtn.disabled = true;
+        const originalHTML = generateBtn.innerHTML;
+        generateBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>Generating...';
+        try {
+            const res = await fetch('http://localhost:8082/api/daywise/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
+            let data;
+            try {
+                data = await res.json();
+            } catch (e) {
+                throw new Error('Invalid server response.');
+            }
+            console.log('Server response:', data);
+            if (data.error) {
+                alert(data.error || 'An error occurred!');
+            } else if (data.message && data.message === "Schedule already generated. Fetching today's schedule.") {
+                alert("Pods and quizzes are already generated. Visit today's schedule.");
+                window.location.href = 'todayschedule.html';
+            } else if (data.message && data.message.toLowerCase().includes("schedule successfully generate")) {
+                alert('Learning Pod generated successfully!');
+                window.location.href = 'todayschedule.html';
+            } else if (data.todaySchedule || data.micro_learning_pod) {
+                alert('Learning Pod generated successfully!');
+                window.location.href = 'todayschedule.html';
+            } else {
+                alert('Unexpected server response.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to generate Learning Pod. Please try again later.');
+        } finally {
+            isGenerating = false;
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = originalHTML;
+        }
+    });
+</script>
+
+
+
+</body>
+</html>

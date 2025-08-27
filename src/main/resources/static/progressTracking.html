@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Learning Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 font-sans text-white">
+    
+    <!-- ✅ Navbar -->
+    <nav class="bg-gray-800 p-4 flex justify-between">
+        <div class="text-lg font-bold">LOGO</div>
+        <div class="space-x-6">
+    
+            <a href="podsAndQuizzes.html" class="text-gray-300 hover:text-white">Learning Pods</a>
+            <a href="studyPlan.html" class="text-gray-300 hover:text-white">Generate Schedule</a>
+            <a href="ChatBot.html" class="text-gray-300 hover:text-white">ChatBot</a>
+        </div>
+    </nav>
+
+    <!-- ✅ Dashboard Header -->
+    <header class="p-6 bg-gray-800 text-white text-xl font-semibold">Hello, Kshitij!</header>
+
+    <!-- ✅ Dashboard Content -->
+    <main class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- 📊 Quiz Score Chart -->
+        <div class="bg-gray-800 p-6 rounded-lg shadow-md">
+            <h2 class="text-lg font-medium mb-4">📌 Quiz Score Progress</h2>
+            <canvas id="quizScoreChart" style="min-height:240px;"></canvas>
+<div id="quizScoreEmptyMsg" style="display:none;color:#aaa;text-align:center;margin-top:1em;">No quiz score data available.</div>
+        </div>
+        
+        <!-- 🎯 Pods Completion Chart -->
+        <div class="bg-gray-800 p-6 rounded-lg shadow-md">
+            <h2 class="text-lg font-medium mb-4">🎯 Pods Completion</h2>
+            <label for="studyPlanSelect" class="block mb-2 text-sm">Select Study Plan:</label>
+            <select id="studyPlanSelect" class="mb-4 p-2 bg-gray-700 text-white rounded w-full"></select>
+            <div id="pods-error" class="text-red-400 text-sm mb-2"></div>
+            <canvas id="podCompletionChart"></canvas>
+            <button id="refreshPodsChart" class="mt-4 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Refresh Chart</button>
+        </div>
+        
+        <!-- 💡 AI Recommendations -->
+        <div class="bg-gray-800 p-6 rounded-lg shadow-md">
+            <h2 class="text-lg font-medium mb-4">💡 AI Recommendations</h2>
+            <ul id="recommendation-list" class="text-gray-300"></ul>
+        </div>
+    </main>
+    
+    <!-- ✅ Footer -->
+    <footer class="bg-gray-800 p-4 text-center text-gray-400 mt-6">
+        <p>&copy; 2025 AI Study Planner. All rights reserved.</p>
+        <div class="mt-2 space-x-4">
+            <a href="#" class="hover:text-white">About Us</a>
+            <a href="#" class="hover:text-white">Contact</a>
+            <a href="#" class="hover:text-white">Privacy Policy</a>
+        </div>
+    </footer>
+
+    <!-- TEST BUTTON TO RESET USERID -->
+    <!-- ✅ JavaScript for Charts -->
+    <script>
+    document.addEventListener('DOMContentLoaded', fetchProgressTrackingData);
+    async function fetchProgressTrackingData() {
+        // Force userId to '01' for testing
+        localStorage.setItem('userId', '01');
+        const userId = '01'; // Always use test user for now
+        console.log('Test mode: Forcing userId to', userId);
+        console.log('Using userId for quiz score fetch:', userId);
+        if (!userId) {
+            alert('User ID not found. Please log in again.');
+            return;
+        }
+        // Get subject for quiz progress bar (from a dropdown or last used subject)
+        let subject = localStorage.getItem('selectedSubject') || '';
+        // For testing, log quizScoreData after fetch
+        let quizScoreData = {};
+
+        // If you have a subject dropdown, get its value here (example):
+        // subject = document.getElementById('subjectDropdown')?.value || subject;
+        if (!subject) {
+            // Try to infer from quizScoreData or prompt user
+            subject = (quizScoreData && Object.keys(quizScoreData)[0]) || '';
+        }
+        if (!subject) {
+            alert('Subject not found. Please select a subject or generate a pod first.');
+            return;
+        }
+        if (!userId) {
+            alert('User ID not found. Please log in again.');
+            return;
+        }
+        try {
+            const quizScoreRes = await fetch(`http://localhost:8082/api/progressTracking/quizScores?userId=${encodeURIComponent(userId)}&t=${Date.now()}`);
+            if (!quizScoreRes.ok) throw new Error(`Failed to fetch quiz scores (status: ${quizScoreRes.status})`);
+            quizScoreData = await quizScoreRes.json();
+            console.log('Fetched quizScoreData:', quizScoreData);
+            if (!quizScoreData || Object.keys(quizScoreData).length === 0) {
+                document.getElementById('quizScoreEmptyMsg').style.display = '';
+            } else {
+                document.getElementById('quizScoreEmptyMsg').style.display = 'none';
+            }
+            const podCompletionRes = await fetch(`http://localhost:8082/api/progressTracking/podCompletion?userId=${encodeURIComponent(userId)}`);
+            if (!podCompletionRes.ok) throw new Error(`Failed to fetch pod completion (status: ${podCompletionRes.status})`);
+            const podCompletionData = await podCompletionRes.json();
+            
+            const aiRecommendationRes = await fetch(`http://localhost:8082/api/progressTracking/recommendations?userId=${encodeURIComponent(userId)}`);
+            if (!aiRecommendationRes.ok) throw new Error(`Failed to fetch AI recommendations (status: ${aiRecommendationRes.status})`);
+            const aiRecommendationText = await aiRecommendationRes.text();
+            
+            console.log('Quiz Score Data:', quizScoreData);
+            renderQuizScoreChart(quizScoreData);
+            await fetchAndRenderStudyPlans();
+            displayRecommendations(aiRecommendationText);
+        } catch (error) {
+            document.getElementById('quizScoreEmptyMsg').style.display = '';
+            console.error("Error fetching progress tracking data:", error);
+        }
+    }
+
+    let quizScoreChartInstance = null;
+    function renderQuizScoreChart(data) {
+        try {
+            const ctx = document.getElementById("quizScoreChart").getContext("2d");
+            const emptyMsg = document.getElementById("quizScoreEmptyMsg");
+            // Destroy previous chart instance if it exists
+            if (quizScoreChartInstance) {
+                quizScoreChartInstance.destroy();
+            }
+            // Handle empty data
+            const labels = Object.keys(data);
+            const values = Object.values(data);
+            console.log('Rendering chart with labels:', labels, 'and values:', values);
+            if (labels.length === 0) {
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                if (emptyMsg) emptyMsg.style.display = '';
+                return;
+            } else {
+                if (emptyMsg) emptyMsg.style.display = 'none';
+            }
+            quizScoreChartInstance = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{ label: "Quiz Score (%)", data: values, backgroundColor: "rgba(54, 162, 235, 0.6)" }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+            });
+        } catch (err) {
+            console.error("Error rendering quiz score chart:", err);
+        }
+    }
+
+    async function fetchAndRenderStudyPlans() {
+        const userId = "01"; // TODO: Replace with dynamic user ID
+        const podsError = document.getElementById("pods-error");
+        podsError.textContent = "";
+        try {
+            const res = await fetch(`http://localhost:8082/api/studyplan/study-plans?userId=${userId}`);
+            if (!res.ok) throw new Error(`Failed to fetch study plans (status: ${res.status})`);
+            const plans = await res.json();
+            const select = document.getElementById("studyPlanSelect");
+            select.innerHTML = "";
+            if (plans && Array.isArray(plans) && plans.length > 0) {
+                plans.forEach((plan) => {
+                    const option = document.createElement("option");
+                    option.value = plan.id;
+                    option.text = `${plan.subject} - ${plan.module} (${plan.duration} days)`;
+                    select.appendChild(option);
+                });
+                renderTimeBasedPodCompletionChart(plans[0]);
+                select.onchange = () => {
+                    const selectedPlan = plans.find(p => p.id == select.value);
+                    renderTimeBasedPodCompletionChart(selectedPlan);
+                };
+                window._allStudyPlans = plans;
+            } else {
+                select.innerHTML = '<option>No study plans found</option>';
+                animatePodCompletionChart(0, 1);
+                podsError.textContent = "Please generate a study plan!";
+            }
+        } catch (err) {
+            animatePodCompletionChart(0, 1);
+            podsError.textContent = `Error: ${err.message}`;
+        }
+    }
+
+    function renderTimeBasedPodCompletionChart(plan) {
+        const podsError = document.getElementById("pods-error");
+        podsError.textContent = "";
+        try {
+            if (!plan) throw new Error("No study plan selected.");
+            const createdAt = plan.createdAt;
+            const duration = plan.duration;
+            const subject = plan.subject;
+            const module = plan.module;
+            const userId = plan.userId || "01";
+            // Try to get the device's local creation time for this plan
+            const devicePlanKey = `studyplan_device_createdAt_${userId}_${subject}_${module}`;
+            let startDate;
+            const deviceCreatedAt = localStorage.getItem(devicePlanKey);
+            if (deviceCreatedAt) {
+                startDate = new Date(deviceCreatedAt);
+            } else if (createdAt) {
+                startDate = new Date(createdAt);
+                podsError.textContent = "Device time tracking not available for this plan. Progress is based on server time.";
+            } else {
+                throw new Error("Invalid study plan data.");
+            }
+            const endDate = new Date(startDate.getTime() + duration * 24 * 60 * 60 * 1000);
+            const now = new Date(); // Always uses device time
+            let percent = ((now - startDate) / (endDate - startDate)) * 100;
+            percent = Math.max(0, Math.min(100, percent));
+            animatePodCompletionChart(percent, duration);
+        } catch (err) {
+            animatePodCompletionChart(0, 1);
+            podsError.textContent = `Error: ${err.message}`;
+        }
+    }
+
+    let podChartInstance = null;
+    function animatePodCompletionChart(percent, duration) {
+        const ctx = document.getElementById("podCompletionChart").getContext("2d");
+        if (podChartInstance) {
+            podChartInstance.destroy();
+        }
+        let current = 0;
+        const step = percent / 50;
+        function draw() {
+            if (podChartInstance) podChartInstance.destroy();
+            podChartInstance = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: ["Pods Completion"],
+                    datasets: [{ label: `Time Progress (${duration} days)`, data: [current], backgroundColor: "rgba(75, 192, 192, 0.6)" }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } }, animation: false }
+            });
+            if (current < percent) {
+                current += step;
+                if (current > percent) current = percent;
+                setTimeout(draw, 20);
+            }
+        }
+        draw();
+    }
+
+    function displayRecommendations(text) {
+        try {
+            const recommendationList = document.getElementById("recommendation-list");
+            recommendationList.innerHTML = text ? `<li>${text}</li>` : "<li>✅ You're on track! Keep up the great work!</li>";
+        } catch (err) {
+            console.error("Error displaying recommendations:", err);
+        }
+    }
+
+    document.getElementById("refreshPodsChart").onclick = function() {
+        const select = document.getElementById("studyPlanSelect");
+        if (window._allStudyPlans && select && select.value) {
+            const selectedPlan = window._allStudyPlans.find(p => p.id == select.value);
+            renderTimeBasedPodCompletionChart(selectedPlan);
+        } else {
+            fetchAndRenderStudyPlans();
+        }
+    };
+
+    document.addEventListener("DOMContentLoaded", fetchProgressTrackingData);
+    setInterval(() => {
+        const select = document.getElementById("studyPlanSelect");
+        if (window._allStudyPlans && select && select.value) {
+            const selectedPlan = window._allStudyPlans.find(p => p.id == select.value);
+            renderTimeBasedPodCompletionChart(selectedPlan);
+        }
+    }, 60 * 1000);
+    
+    </script>
+</body>
+</html>

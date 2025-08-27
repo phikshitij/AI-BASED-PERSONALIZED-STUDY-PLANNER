@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Plan Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e2e;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 20px auto;
+            background: #2a2a3b;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            background: #3b3b4f;
+            color: white;
+        }
+        .readonly-field {
+            background: #333347;
+            cursor: not-allowed;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background-color: #ff9800;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #e68900;
+        }
+        #studyPlan {
+            margin-top: 20px;
+            text-align: left;
+            background: #2a2a3b;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        #savePlan {
+            display: none; /* Hidden until study plan is generated */
+            margin-top: 10px;
+            background-color: #4CAF50;
+        }
+        #savePlan:hover {
+            background-color: #45a049;
+        }
+        
+        /* Header Styles */
+        .header {
+            background-color: #2A2A3C;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li {
+            display: inline;
+            margin-left: 10px; /* Keeps Home on the left */
+        }
+
+        nav ul li {
+            display: inline;
+            margin-right: 10px; /* Keeps existing schedule on the right */
+        }
+        nav ul li a {
+            color: #A6E3E9;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        nav ul li a:hover {
+            color: #FFC857;
+            text-decoration: underline;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background-color: #2A2A3C;
+            color: #A6E3E9;
+            text-align: left;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="header">
+        <nav>
+            <ul>
+                <li><a href="progressTracking.html">Home</a></li>
+                <li><a href="display.html">Existing Schedules</a></li>
+                <li><a href="podsAndQuizzes.html">Learning Pods & Quizzes</a></li>
+                <li><a href="todayschedule.html">Today's Schedule</a></li>
+                <li><a href="ChatBot.html">ChatBot</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="container">
+        <h1>Generate Your Study Plan</h1>
+        
+        <!-- Read-only fields from onboarding data -->
+        <label for="academicLevel">Academic Level:</label>
+        <input type="text" id="academicLevel" class="readonly-field" readonly>
+        
+        <label for="domain">Domain:</label>
+        <input type="text" id="domain" class="readonly-field" readonly>
+        
+        <label for="currentYear">Current Year:</label>
+        <input type="text" id="currentYear" class="readonly-field" readonly>
+        
+        <!-- Additional fields -->
+        <label for="semester">Semester:</label>
+        <select id="semester">
+            <option value="even">Even</option>
+            <option value="odd">Odd</option>
+        </select>
+        
+        <label for="subject">Subject:</label>
+        <select id="subject">
+            <option value="">Select Subject</option>
+            <!-- Subject options will be populated dynamically based on domain, year and semester -->
+        </select>
+        
+        <label for="module">Module:</label>
+        <select id="module">
+            <option value="">Select Module</option>
+            <!-- Modules will be populated based on subject selection -->
+        </select>
+        
+        <label for="recommendedHours">Recommended Hours by the University:</label>
+        <input type="text" id="recommendedHours" class="readonly-field" readonly>
+
+        <label for="days">Days:</label>
+        <input type="number" id="days" placeholder="Enter number of days" required>
+        
+        <label for="hours">Hours Per Day:</label>
+        <input type="number" id="hours" placeholder="Enter hours per day" required>
+        
+        <label for="learning_style">Learning Style:</label>
+        <select id="learning_style">
+            <option value="visual">Visual</option>
+            <option value="auditory">Auditory</option>
+            <option value="kinesthetic">Kinesthetic</option>
+        </select>
+    
+        <button id="generatePlan" style="position:relative; display:flex; align-items:center; justify-content:center; width:100%;">
+  <span class="btn-spinner" style="display:none; align-items:center;">
+    <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+    Generating...
+  </span>
+  <span class="btn-label">Generate Study Plan</span>
+</button>
+        <button id="savePlan">Save Study Plan</button>
+    </div>
+
+    <div id="studyPlan" class="container"></div>
+    
+    <!-- Footer Section -->
+    <footer class="footer">
+        <p> 2025 Smart Study Planner | Designed for Productivity </p>
+    </footer>
+
+<script>
+    // Fetch onboarding data when the page loads
+    document.addEventListener("DOMContentLoaded", function () {
+        checkOnboardingStatus();
+        fetchOnboardingData();
+        attachEventListeners();
+    });
+
+    async function fetchOnboardingData() {
+        try {
+            const response = await fetch("http://localhost:8082/api/onboarding/fetch/01");
+            const data = await response.json();
+            
+            if (!data || data.message === "No onboarding data found") {
+                // Redirect to onboarding if no data exists
+                alert("Please complete your onboarding first");
+                window.location.href = "Onboarding.html";
+                return;
+            }
+
+            // Update read-only fields
+            document.getElementById("academicLevel").value = data.academicLevel || "";
+            document.getElementById("domain").value = data.domain || "";
+            document.getElementById("currentYear").value = data.year || "";
+
+            // Populate subjects based on the fetched data
+            if (data.year) {
+                populateSubjects(data.year);
+            }
+        } catch (error) {
+            console.error("Error fetching onboarding data:", error);
+            // Don't show alert, just log the error and continue with empty fields
+            document.getElementById("academicLevel").value = "";
+            document.getElementById("domain").value = "";
+            document.getElementById("currentYear").value = "";
+        }
+    }
+
+    function attachEventListeners() {
+        // Update subjects when semester changes
+        document.getElementById("semester").addEventListener("change", function () {
+            const currentYear = document.getElementById("currentYear").value.trim();
+            if (currentYear) {
+                populateSubjects(currentYear);
+            }
+        });
+        document.getElementById("module").addEventListener("change", function () {
+        const subject = document.getElementById("subject").value;
+        const module = this.value;
+
+        if (recommendedHoursMap[subject] && recommendedHoursMap[subject][module]) {
+        document.getElementById("recommendedHours").value = recommendedHoursMap[subject][module] + " hours";
+        } else {
+        document.getElementById("recommendedHours").value = "N/A";
+        }
+        });
+
+        // Populate modules when subject changes
+        document.getElementById("subject").addEventListener("change", function () {
+            populateModules(this.value);
+        });
+
+        // Generate and save study plan event listeners
+        document.getElementById("generatePlan").addEventListener("click", async function() {
+        const btn = document.getElementById("generatePlan");
+        const label = btn.querySelector(".btn-label");
+        const spinner = btn.querySelector(".btn-spinner");
+        btn.disabled = true;
+        label.style.display = "none";
+        spinner.style.display = "flex";
+        try {
+            await fetchStudyPlan();
+        } finally {
+            btn.disabled = false;
+            label.style.display = "inline";
+            spinner.style.display = "none";
+        }
+    });
+        document.getElementById("savePlan").addEventListener("click", saveStudyPlan);
+    }
+
+    // Populate subjects based on year and semester selection
+    function populateSubjects(year) {
+    const semesterSelect = document.getElementById("semester");
+    const subjectSelect = document.getElementById("subject");
+
+    // Convert year to string to avoid `.includes()` error
+    const yearStr = String(year).trim();
+
+    // Clear existing options
+    subjectSelect.innerHTML = '<option value="">Select Subject</option>';
+
+    // Get selected semester
+    const semester = semesterSelect.value;
+    if (!semester) return; // Stop if semester is not selected
+
+    // Ensure Year is correctly checked
+    if (yearStr.includes("3") || yearStr.toLowerCase().includes("third")) {
+        if (semester === "odd") {
+            addSubjectOption(subjectSelect, "TCS", "Theoretical Computer Science");
+            addSubjectOption(subjectSelect, "SE", "Software Engineering");
+            addSubjectOption(subjectSelect, "CN", "Computer Networks");
+            addSubjectOption(subjectSelect, "DWM", "Data Warehousing and Mining");
+            addSubjectOption(subjectSelect, "IP", "Internet Programming");
+        } else if (semester === "even") {
+            addSubjectOption(subjectSelect, "SPCC", "System Programming and Compiler Construction");
+            addSubjectOption(subjectSelect, "CSS", "Cryptography and System Security");
+            addSubjectOption(subjectSelect, "AI", "Artificial Intelligence");
+            addSubjectOption(subjectSelect, "MC", "Mobile Computing");
+            addSubjectOption(subjectSelect, "IoT", "Internet of Things");
+        }
+    }
+}
+
+const recommendedHoursMap = {
+    "TCS": {
+        "1.Basic Concepts and finite Automata": 9,
+        "2.Regular Expressions and Languages": 7,
+        "3.Grammers": 8,
+        "4.PushDown Automata": 4,
+        "5.Turing Machine": 9,
+        "6.Undecidability": 2
+    },
+    // You can add more subjects and modules like this
+};
+
+
+    function populateModules(subject) {
+        const moduleSelect = document.getElementById("module");
+
+        // Clear existing options
+        moduleSelect.innerHTML = '<option value="">Select Module</option>';
+
+        // Add modules based on subject
+        const modules = {
+            "TCS": ["1.Basic Concepts and finite Automata", "2.Regular Expressions and Languages", "3.Grammers","4.PushDown Automata","5.Turing Machine","6.Undecidability"],
+            "SE": ["Software Development Life Cycle", "Design Patterns"],
+            "CN": ["OSI Model", "TCP/IP Protocol", "Routing Algorithms"],
+            "DWM": ["Data Warehousing", "Data Mining"],
+            "IP": ["HTML & CSS Basics", "JavaScript & Frameworks"],
+            "SPCC": ["Compilers", "Parsing Techniques"],
+            "CSS": ["Encryption Methods", "Cyber Security Basics"],
+            "AI": ["Machine Learning", "Natural Language Processing"],
+            "MC": ["Android Development", "Wireless Networks"],
+            "IoT": ["IoT Fundamentals", "IoT Devices & Sensors"]
+        };
+
+        if (modules[subject]) {
+            modules[subject].forEach(module => {
+                addSubjectOption(moduleSelect, module, module); // Both value and text are the same
+            });
+        }
+    }
+
+
+    function addSubjectOption(selectElement, value, text) {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = text;
+        selectElement.appendChild(option);
+    }
+
+    let generatedStudyPlan = null;
+
+    async function fetchStudyPlan() {
+        const domain = document.getElementById("domain").value;
+        const academicLevel = document.getElementById("academicLevel").value;
+        const year = document.getElementById("currentYear").value;
+        const subject = document.getElementById("subject").value;
+        const module = document.getElementById("module").value;
+        const days = document.getElementById("days").value;
+        const hours = document.getElementById("hours").value;
+        const learning_style = document.getElementById("learning_style").value;
+
+        if (!subject || !module || !days || !hours) {
+            alert("Please fill in all required fields.");
+            return;
+        }
+
+        try {
+            console.log(" Sending API Request...");
+            
+            const response = await fetch("http://127.0.0.1:5000/generate-study-plan", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    domain,
+                    academic_level: academicLevel,
+                    year,
+                    subject,
+                    module,
+                    days: parseInt(days),
+                    hours_per_day: parseInt(hours),
+                    learning_style
+                })
+            });
+
+            console.log(" API Response Status:", response.status);
+
+            if (!response.ok) {
+                throw new Error("Failed to generate study plan");
+            }
+
+            const data = await response.json();
+            console.log(" Study Plan Generated:", data);
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            // Store study plan globally
+            generatedStudyPlan = data;  
+
+            document.getElementById("savePlan").style.display = "block";  // Show Save Button
+
+            // Render study plan in UI
+            const studyPlanDiv = document.getElementById("studyPlan");
+            studyPlanDiv.innerHTML = data.map(day => `
+                <h3>${day.day}: ${day.topic} (${day.hours} hours)</h3>
+                <h4>Key Points</h4>
+                <ul>${day.key_points.map(point => `<li>${point}</li>`).join("")}</ul>
+                <h4>Recommended Resources</h4>
+                <ul>${day.recommended_resources.map(res => `<li><b>${res.type}:</b> <a href="${res.link}" target="_blank" rel="noopener noreferrer">${res.title}</a></li>`).join("")}</ul>
+            `).join("");
+
+        } catch (error) {
+            console.error(" Error generating study plan:", error);
+            alert("Error generating study plan.");
+        }
+    }
+
+
+
+
+
+    async function saveStudyPlan() {
+        if (!generatedStudyPlan || generatedStudyPlan.length === 0) {
+            alert("No study plan available to save.");
+            return;
+        }
+
+        try {
+            console.log(" Sending Save Request...");
+
+            // Format the date with timezone information in the correct format
+            const now = new Date();
+            const formattedDate = now.toISOString().replace('Z', '+0000');
+
+            const subject = document.getElementById("subject").value;
+            const module = document.getElementById("module").value;
+
+            // 1. Fetch all study plans for user (to check for existing module plan)
+            const userId = "default";
+            let existingPlans = [];
+            try {
+                const fetchResponse = await fetch(`http://localhost:8082/api/studyplan/all`);
+                if (fetchResponse.ok) {
+                    existingPlans = await fetchResponse.json();
+                }
+            } catch (err) {
+                // If fetch fails, continue to save (assume no duplicates)
+                existingPlans = [];
+            }
+
+            // 2. Find and delete any existing plan for the same subject & module
+            if (Array.isArray(existingPlans)) {
+                for (const plan of existingPlans) {
+                    if (
+                        plan.subject === subject &&
+                        plan.module === module
+                    ) {
+                        // Delete the duplicate plan
+                        try {
+                            await fetch(`http://localhost:8082/api/studyplan/${plan.id}`, { method: "DELETE" });
+                        } catch (e) {
+                            // Ignore delete error, continue
+                        }
+                    }
+                }
+            }
+
+            const formattedStudyPlan = {
+                userId: userId,
+                subject: subject,
+                module: module,
+                hoursPerDay: parseInt(document.getElementById("hours").value),
+                duration: parseInt(document.getElementById("days").value),
+                learningStyle: document.getElementById("learning_style").value,
+                studyData: generatedStudyPlan.map(day => `\nDay ${day.day}: ${day.topic} (${day.hours} hours)\n\nKey Points:\n${day.key_points.map(point => `- ${point}`).join('\n')}\n\nRecommended Resources:\n${day.recommended_resources.map(res => `- ${res.type}: ${res.title} (${res.link})`).join('\n')}`).join('\n\n'),
+                createdAt: formattedDate
+            };
+
+            console.log("Sending study plan with date:", formattedDate); // Debug log
+
+            const response = await fetch("http://localhost:8082/api/studyplan/save", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify(formattedStudyPlan)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText);
+            }
+
+            const result = await response.json();
+            alert(" Study Plan Saved Successfully!");
+
+            // --- Device Time Tracking for Progress Chart ---
+            // Store the device's local time when the plan was saved, keyed by subject+module+userId
+            try {
+                const deviceCreatedAt = new Date().toISOString();
+                const devicePlanKey = `studyplan_device_createdAt_${userId}_${subject}_${module}`;
+                localStorage.setItem(devicePlanKey, deviceCreatedAt);
+            } catch (err) {
+                // Ignore localStorage errors
+            }
+            // --- END Device Time Tracking ---
+        } catch (error) {
+            console.error(" Error saving study plan:", error);
+            alert("Error saving study plan: " + error.message);
+        }
+    }
+
+    // Add this function to check if onboarding is completed
+    function checkOnboardingStatus() {
+        const userId = "01"; // Default user ID
+        fetch(`http://localhost:8082/api/onboarding/fetch/${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data || data.message === "No onboarding data found") {
+                    alert("Please complete your onboarding first");
+                    window.location.href = "Onboarding.html";
+                }
+            })
+            .catch(error => {
+                console.error("Error checking onboarding status:", error);
+                // Continue loading the page even if check fails
+            });
+    }
+
+</script>
+
+
+</body>
+</html>

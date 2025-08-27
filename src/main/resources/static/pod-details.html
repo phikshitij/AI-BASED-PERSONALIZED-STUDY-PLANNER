@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Pod Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 font-[Inter]">
+
+    <!-- Navbar -->
+    <nav class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-white text-xl font-bold">Study Plan</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="todayschedule.html">
+                        <button class="bg-gray-700 text-gray-300 border border-gray-600 px-4 py-2 text-sm font-medium">Back</button>
+                    </a>              
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ✅ Main Content with Increased Width -->
+    <div class="max-w-6xl mx-auto px-6 sm:px-8 lg:px-10 py-10">
+        <div class="bg-gray-800 rounded-lg shadow p-8">
+            <h2 id="pod-title" class="text-3xl font-bold text-white mb-6"></h2>
+            <p id="pod-subject" class="text-lg text-gray-400 mb-4"></p>
+            <h3 class="text-xl text-white font-semibold mb-4">Resources:</h3>
+            <div id="resource-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 border-t border-gray-700 mt-8">
+        <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="text-sm text-gray-400">© 2024 Study Plan. All rights reserved.</div>
+            <div class="flex space-x-6">
+                <a href="#" class="text-gray-500 hover:text-gray-400"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-gray-500 hover:text-gray-400"><i class="fab fa-facebook"></i></a>
+                <a href="#" class="text-gray-500 hover:text-gray-400"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ✅ JavaScript to Load Stored Data -->
+    <script>
+        function getResourceLink(resource, type) {
+            // More specific and accurate resource mapping for Automata Theory
+            const resourceMap = {
+                'introduction to automata': {
+                    video: 'https://www.youtube.com/watch?v=58N2N7zJGrQ',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/automata_theory_introduction.htm',
+                    article: 'https://www.geeksforgeeks.org/introduction-of-finite-automata/'
+                },
+                'formal language': {
+                    video: 'https://www.youtube.com/watch?v=HfwGjrAPrO8',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/automata_theory_languages.htm',
+                    article: 'https://www.geeksforgeeks.org/introduction-of-formal-languages/'
+                },
+                'regular expression': {
+                    video: 'https://www.youtube.com/watch?v=9PLnN3k9Iqs',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/regular_expressions.htm',
+                    article: 'https://www.geeksforgeeks.org/regular-expressions-regular-grammar-and-regular-languages/'
+                },
+                'finite automata': {
+                    video: 'https://www.youtube.com/watch?v=Qa6csfkK7_I',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/finite_automata.htm',
+                    article: 'https://www.geeksforgeeks.org/introduction-of-finite-automata/'
+                },
+                'dfa': {
+                    video: 'https://www.youtube.com/watch?v=40i4PKpM0cI',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/deterministic_finite_automaton.htm',
+                    article: 'https://www.geeksforgeeks.org/deterministic-finite-automata-acceptance-of-strings/'
+                },
+                'nfa': {
+                    video: 'https://www.youtube.com/watch?v=eqCkkC9A0Q4',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/non_deterministic_finite_automaton.htm',
+                    article: 'https://www.geeksforgeeks.org/nondeterministic-finite-automata-nfa/'
+                },
+                'turing machine': {
+                    video: 'https://www.youtube.com/watch?v=dNRDvLACg5Q',
+                    pdf: 'https://www.tutorialspoint.com/automata_theory/turing_machine_introduction.htm',
+                    article: 'https://www.geeksforgeeks.org/turing-machine-introduction/'
+                }
+            };
+
+            // Find the most specific matching topic
+            let bestMatch = null;
+            let maxMatchLength = 0;
+            const title = resource.title.toLowerCase();
+
+            for (const [topic, links] of Object.entries(resourceMap)) {
+                if (title.includes(topic) && topic.length > maxMatchLength) {
+                    bestMatch = links;
+                    maxMatchLength = topic.length;
+                }
+            }
+
+            if (bestMatch) {
+                return bestMatch[type];
+            }
+
+            // Default Automata Theory resources if no specific match is found
+            const defaultResources = {
+                video: 'https://www.youtube.com/watch?v=58N2N7zJGrQ', // Introduction to Automata Theory
+                pdf: 'https://www.tutorialspoint.com/automata_theory/automata_theory_introduction.htm',
+                article: 'https://www.geeksforgeeks.org/introduction-of-finite-automata/'
+            };
+
+            // Log for debugging
+            console.log(`No specific match found for: ${resource.title}. Using default ${type} resource.`);
+            
+            return defaultResources[type];
+        }
+
+        function loadPodDetails() {
+            // Retrieve stored pod data
+            const pod = JSON.parse(localStorage.getItem("selectedPod"));
+            const subject = localStorage.getItem("selectedSubject");
+
+            if (!pod || !subject) {
+                document.getElementById("resource-container").innerHTML = `<p class='text-gray-400'>No resources found.</p>`;
+                return;
+            }
+
+            // Set title and subject
+            document.getElementById("pod-title").innerText = pod.title;
+            document.getElementById("pod-subject").innerText = `Subject: ${subject}`;
+
+            // Display resources with enhanced formatting and validation
+            const resourceContainer = document.getElementById("resource-container");
+            resourceContainer.innerHTML = '';
+
+            pod.resources.forEach(resource => {
+                const resourceDiv = document.createElement("div");
+                resourceDiv.className = "p-5 bg-gray-700 rounded-lg border border-gray-600 shadow-lg hover:bg-gray-600 transition-all";
+
+                // Determine resource type with more specific checks
+                let type;
+                const title = resource.title.toLowerCase();
+                if (title.includes('video') || title.includes('youtube')) {
+                    type = 'video';
+                } else if (title.includes('pdf') || title.includes('document') || title.includes('notes')) {
+                    type = 'pdf';
+                } else {
+                    type = 'article';
+                }
+
+                // Get appropriate link
+                const link = getResourceLink(resource, type);
+
+                // Create resource card with icon, better styling, and topic indication
+                resourceDiv.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">
+                            ${type === 'video' ? '🎥' : type === 'pdf' ? '📄' : '📑'}
+                        </span>
+                        <div>
+                            <p class="text-lg font-semibold text-white mb-2">${resource.title}</p>
+                            <a href="${link}" 
+                               onclick="return validateAndOpenResource(event, '${link}', '${resource.title}')"
+                               target="_blank" 
+                               class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors">
+                                <span class="mr-2">Open ${type.toUpperCase()}</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                `;
+
+                resourceContainer.appendChild(resourceDiv);
+            });
+        }
+
+        // Add validation function
+        function validateAndOpenResource(event, link, title) {
+            // Check if the link is valid and related to computer science/automata theory
+            const validDomains = [
+                'tutorialspoint.com/automata_theory',
+                'geeksforgeeks.org',
+                'youtube.com',
+                'nptel.ac.in',
+                'mit.edu'
+            ];
+
+            const isValid = validDomains.some(domain => link.includes(domain));
+            
+            if (!isValid) {
+                event.preventDefault();
+                alert('Warning: This resource might not be related to Automata Theory. Please try another resource.');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Load details when the page is opened
+        document.addEventListener("DOMContentLoaded", loadPodDetails);
+    </script>
+
+</body>
+</html>

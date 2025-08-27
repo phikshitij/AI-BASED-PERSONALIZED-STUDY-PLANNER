@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Calendar Authorization</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="max-w-md w-full bg-gray-800 rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold mb-4 text-center">Google Calendar Authorization</h1>
+        <p class="mb-6">To add study plans to your Google Calendar, you need to authorize this application to access your calendar.</p>
+        
+        <div class="flex justify-center">
+            <button id="authButton" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Authorize with Google
+            </button>
+        </div>
+        
+        <div class="mt-6 text-sm text-gray-400">
+            <p>This will redirect you to Google's authorization page. After authorizing, you'll be redirected back to this application.</p>
+        </div>
+    </div>
+    
+    <div class="mt-8 text-center text-sm text-gray-500">
+        <p>AI Study Planner - Google Calendar Integration</p>
+    </div>
+
+    <script>
+        document.getElementById('authButton').addEventListener('click', function() {
+            // Use the API endpoint to initiate auth instead of hardcoding the URL
+            window.location.href = '/api/calendar/auth';
+        });
+    </script>
+</body>
+</html>

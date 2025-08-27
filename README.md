@@ -75,15 +75,6 @@ This section showcases the user journey through the application, from landing to
 
 ---
 
-## ⚙️ System Architecture
-
-The system authenticates users and allows them to set up an academic profile. From the main dashboard, they can access core features like AI-powered study plan generation, which syncs with Google Calendar, and an interactive quiz section. Both the planner and the chatbot leverage the Gemini API to provide intelligent responses and content.
-
-*(**Recommendation:** You can place Figure 4.1.1 from your report here for a visual representation)*
-`![System Architecture Diagram](path/to/your/architecture_diagram.png)`
-
----
-
 ## 🚀 Getting Started
 
 ### Prerequisites

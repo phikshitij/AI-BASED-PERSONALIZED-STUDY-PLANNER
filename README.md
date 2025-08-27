@@ -20,45 +20,56 @@ This project is a comprehensive educational tool designed to help students effic
 
 This section showcases the user journey through the application, from landing to getting AI-powered help.
 
-**Instructions:** Replace the placeholder paths with the actual paths to your screenshots. The figure numbers correspond to your project report.
-
 **1. Landing Page** 
+
 ![Landing Page](./screenshots/landing_page.png)
 
 **2. Login Page** 
+
 ![Login Page](./screenshots/login_page.png)
 
 **3. Academic Profile Setup** 
+
 ![Academic Profile Setup](./screenshots/academic_profile_setup.png)
 
 **4. Main Dashboard** 
+
 ![Dashboard View](./screenshots/dashboard_screenshot.png)
 
-**5. Generating a Study Plan** 
+**5. Generating a Study Plan**
+
 ![Study Plan Generation](./screenshots/plan_generation_screenshot.png)
 
-**6. Customized Study Plan View** 
+**6. Customized Study Plan View**
+
 ![Customized Plan View](./screenshots/custom_plan_view.png)
 
 **7. Schedule with Provided Resources** 
+
 ![Schedule and Resources](./screenshots/schedule_and_resources.png)
 
-**8. Google Calendar Integration** 
+**8. Google Calendar Integration**
+
 ![Calendar Integration](./screenshots/calendar_integration.png)
 
 **9. Generating Learning Pods and Quizzes** 
+
 ![Generating Pods and Quizzes](./screenshots/generating_pods.png)
 
-**10. Viewing Generated Quizzes** 
+**10. Viewing Generated Quizzes**
+
 ![Generated Quizzes](./screenshots/generated_quizzes.png)
 
-**11. Taking a Quiz** 
+**11. Taking a Quiz**
+
 ![Quiz Section](./screenshots/quiz_section.png)
 
-**12. Quiz Results** 
+**12. Quiz Results**
+
 ![Quiz Results](./screenshots/quiz_results.png)
 
 **13. AI Chatbot** 
+
 ![Chatbot Interface](./screenshots/chatbot_screenshot.png)
 
 ---
